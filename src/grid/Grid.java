@@ -196,9 +196,7 @@ public class Grid {
                     case UP, DOWN -> row - i;
                 };
 
-                if(movementGrid[i][j] != 0) System.out.println("KALA: " + movementGrid[i][j]);
-
-                System.out.println("This is the table: ");
+                /*System.out.println("This is the table: ");
                 for(int z = 0; z < movementGrid.length; z++)
                 {
                     System.out.print("{");
@@ -208,9 +206,10 @@ public class Grid {
                     }
                     System.out.print("}");
                     System.out.println(",");
-                }
+                }*/
 
                 setValue(i, j, 0);
+                if(getValue(row, col) > 0) spawnedList.add(new Integer[]{row,col});
                 setValue(row, col, getValue(row, col) + value);
             }
         }

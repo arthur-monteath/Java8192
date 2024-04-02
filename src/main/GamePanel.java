@@ -31,7 +31,7 @@ public class GamePanel extends JPanel {
     public static int x=Toolkit.getDefaultToolkit().getScreenSize().width;
     public static int y=Toolkit.getDefaultToolkit().getScreenSize().height;
 
-    private Grid grid;
+    private Grid[] grids;
 
     public GamePanel()
     {
@@ -43,9 +43,17 @@ public class GamePanel extends JPanel {
 
         setBackground(new Color(248, 246, 227,255));
 
-        grid = new Grid(4, 4);
+        grids = new Grid[]{
+                new Grid(4, 4),
+                new Grid(4, 4),
+                new Grid(4, 4),
+                new Grid(4, 4),
+        };
 
-        grid.spawnRandomTiles(2);
+        for (Grid grid : grids)
+        {
+            grid.spawnRandomTiles(2);
+        }
 
         requestFocusInWindow();
         setFocusable(true);
@@ -80,26 +88,48 @@ public class GamePanel extends JPanel {
     {
         if(e.getKeyCode()==KeyEvent.VK_A || e.getKeyCode()==KeyEvent.VK_LEFT)
         {
-            grid.moveTiles(Grid.Directions.LEFT); framesSinceMove = 1;
+            for (Grid grid : grids) {
+                grid.moveTiles(Grid.Directions.LEFT);
+            } framesSinceMove = 1;
         }
         else if(e.getKeyCode()==KeyEvent.VK_W || e.getKeyCode()==KeyEvent.VK_UP)
         {
-            grid.moveTiles(Grid.Directions.UP); framesSinceMove = 1;
+            for (Grid grid : grids) {
+                grid.moveTiles(Grid.Directions.UP);
+            } framesSinceMove = 1;
         }
         else if(e.getKeyCode()==KeyEvent.VK_D || e.getKeyCode()==KeyEvent.VK_RIGHT)
         {
-            grid.moveTiles(Grid.Directions.RIGHT); framesSinceMove = 1;
+            for (Grid grid : grids) {
+                grid.moveTiles(Grid.Directions.RIGHT);
+            } framesSinceMove = 1;
         }
         else if(e.getKeyCode()==KeyEvent.VK_S || e.getKeyCode()==KeyEvent.VK_DOWN)
         {
-            grid.moveTiles(Grid.Directions.DOWN); framesSinceMove = 1;
+            for (Grid grid : grids) {
+                grid.moveTiles(Grid.Directions.DOWN);
+            } framesSinceMove = 1;
         }
         else if(e.getKeyCode()==KeyEvent.VK_R)
         {
-            grid = new Grid(4, 4);
+            grids = new Grid[]{
+                    new Grid(4, 4),
+                    new Grid(4, 4),
+                    new Grid(4, 4),
+                    new Grid(4, 4),
+            };
 
-            grid.spawnRandomTiles(2);
+            for (Grid grid : grids)
+            {
+                grid.spawnRandomTiles(2);
+            }
         }
+
+        /*for (int i = 0; i < grids.length; i++) {
+            for (Grid grid : grids) {
+                movementGrid = grid.getMovementGrid();
+            }
+        }*/
     }
 
     public void keyReleased(KeyEvent e)
@@ -122,10 +152,11 @@ public class GamePanel extends JPanel {
 
     int framesSinceMove = 0, animationLength = 30;
 
-    public void paintComponent(Graphics g) {
+    public void paintComponent(Graphics g)
+    {
         super.paintComponent(g); // calls the JPanel's paint component method this is used to clean the surface
 
-        if (framesSinceMove > 0) framesSinceMove++;
+        if(framesSinceMove > 0) framesSinceMove++;
 
         g.setColor(new Color(177, 170, 129));
         g.fillRect(0, 0, 612, 612);
@@ -135,84 +166,101 @@ public class GamePanel extends JPanel {
 
         int elementSize = 36, elementGap = 16;
 
-        int gridSize = (elementSize + elementGap) * grid.getRows() - elementGap;
+        int gridSize = (elementSize + elementGap) * grids[0].getRows() - elementGap;
 
         int screenSize = 612;
         int center = screenSize / 2;
-        int gridPosition = center - gridSize / 2;
 
-        for (int i = 0; i < grid.getRows(); i++) {
-            for (int j = 0; j < grid.getColumns(); j++) {
+        int borderSize = 32; // size of the window border
 
-                int[] position = {gridPosition + (elementSize + elementGap) * j, gridPosition + (elementSize + elementGap) * i};
+        for (int u = 0; u < grids.length; u++) {
+            Grid grid = grids[u];
 
-                drawElement(position, elementSize, "", grid.getColor(0), g);
-            }
-        }
-
-        if (framesSinceMove >= 1) {
-            int[][] movementGrid = grid.getMovementGrid();
-
-            int[][] oldGrid = grid.getOldGrid();
+            int gridX = borderSize + center / 2 + center * (u % 2) - (2 * borderSize) * (u % 2) - gridSize / 2;
+            int gridY = borderSize + center / 2 + center * (u / 2) - (2 * borderSize) * (u / 2) - gridSize / 2;
 
             for (int i = 0; i < grid.getRows(); i++) {
                 for (int j = 0; j < grid.getColumns(); j++) {
 
-                    if (oldGrid[i][j] == 0) continue;
+                    int[] position = {gridX + (elementSize + elementGap) * j, gridY + (elementSize + elementGap) * i};
 
-                    int r = i, c = j;
+                    drawElement(position, elementSize, "", grid.getColor(0), g);
+                }
+            }
+        }
 
-                    switch (grid.getLastDirection()) {
-                        case UP, DOWN -> r += movementGrid[i][j];
-                        case LEFT, RIGHT -> c += movementGrid[i][j];
+        for (int u = 0; u < grids.length; u++) {
+            Grid grid = grids[u];
+
+            int gridX = borderSize + center/2 + center * (u%2) - (2*borderSize) * (u%2) - gridSize/2;
+            int gridY = borderSize + center/2 + center * (u/2) - (2*borderSize) * (u/2) - gridSize/2;
+
+            if (framesSinceMove >= 1) {
+                int[][] movementGrid = grid.getMovementGrid();
+
+                int[][] oldGrid = grid.getOldGrid();
+
+                for (int i = 0; i < grid.getRows(); i++) {
+                    for (int j = 0; j < grid.getColumns(); j++) {
+
+                        if (oldGrid[i][j] == 0) continue;
+
+                        int r = i, c = j;
+
+                        switch (grid.getLastDirection()) {
+                            case UP, DOWN -> r += movementGrid[i][j];
+                            case LEFT, RIGHT -> c += movementGrid[i][j];
+                        }
+
+                        int x = Utils.lerp(gridX + (elementSize + elementGap) * j,
+                                gridX + (elementSize + elementGap) * c,
+                                (double) framesSinceMove / animationLength);
+
+                        int y = Utils.lerp(gridY + (elementSize + elementGap) * i,
+                                gridY + (elementSize + elementGap) * r,
+                                (double) framesSinceMove / animationLength);
+
+                        int[] position = {x, y};
+
+                        String text = Integer.toString(oldGrid[i][j]);
+
+                        drawElement(position, elementSize, text, grid.getColor(oldGrid[i][j]), g);
                     }
+                }
 
-                    int x = Utils.lerp(gridPosition + (elementSize + elementGap) * j,
-                            gridPosition + (elementSize + elementGap) * c,
-                            (double) framesSinceMove / animationLength);
+                for (Integer[] obj : grid.getSpawnedList()) {
+                    int size = Utils.lerpEaseIn(0, elementSize, (double) framesSinceMove / animationLength);
 
-                    int y = Utils.lerp(gridPosition + (elementSize + elementGap) * i,
-                            gridPosition + (elementSize + elementGap) * r,
-                            (double) framesSinceMove / animationLength);
+                    int x = gridX + (elementSize + elementGap) * obj[1] + (elementSize / 2 - size / 2);
+
+                    int y = gridY + (elementSize + elementGap) * obj[0] + ((elementSize / 2 - size / 2));
 
                     int[] position = {x, y};
 
-                    String text = oldGrid[i][j] > 0 ? Integer.toString(oldGrid[i][j]) : "";
-
-                    drawElement(position, elementSize, text, grid.getColor(oldGrid[i][j]), g);
+                    drawElement(position, size, Integer.toString(grid.getValue(obj[0], obj[1])), grid.getColor(obj[0], obj[1]), g);
                 }
-            }
 
-            for (Integer[] obj : grid.getSpawnedList()) {
-                int size = Utils.lerp(0, elementSize, (double) framesSinceMove / animationLength);
+                if (framesSinceMove >= animationLength) {
+                    framesSinceMove = 0;
+                }
+            } else {
+                for (int i = 0; i < grid.getRows(); i++) {
+                    for (int j = 0; j < grid.getColumns(); j++) {
 
-                int x = gridPosition + (elementSize + elementGap) * obj[1] + (elementSize / 2 - size / 2);
+                        if (grid.getValue(i, j) == 0) continue;
 
-                int y = gridPosition + (elementSize + elementGap) * obj[0] + ((elementSize / 2 - size / 2));
+                        int[] position = {gridX + (elementSize + elementGap) * j, gridY + (elementSize + elementGap) * i};
 
-                int[] position = {x, y};
+                        String text = Integer.toString(grid.getValue(i, j));
 
-                drawElement(position, size, Integer.toString(grid.getValue(obj[0], obj[1])), grid.getColor(obj[0], obj[1]), g);
-            }
-
-            if (framesSinceMove >= animationLength) {
-                framesSinceMove = 0;
-            }
-        } else {
-            for (int i = 0; i < grid.getRows(); i++) {
-                for (int j = 0; j < grid.getColumns(); j++) {
-
-                    if (grid.getValue(i, j) == 0) continue;
-
-                    int[] position = {gridPosition + (elementSize + elementGap) * j, gridPosition + (elementSize + elementGap) * i};
-
-                    String text = grid.getValue(i, j) > 0 ? Integer.toString(grid.getValue(i, j)) : "";
-
-                    drawElement(position, elementSize, text, grid.getColor(i, j), g);
+                        drawElement(position, elementSize, text, grid.getColor(i, j), g);
+                    }
                 }
             }
         }
-    }    //((Graphics2D) g).setComposite(fullOpacity)
+
+        //((Graphics2D) g).setComposite(fullOpacity);
+    }
 
     private void drawElement(int[] gridPosition, int elementSize, String text, Color color, Graphics g)
     {
