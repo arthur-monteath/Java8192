@@ -9,4 +9,9 @@ public class Utils {
         return (i < grid.getRows() && i >= 0 &&
                 j < grid.getColumns() && j >= 0);
     }
+
+    public static int lerp(int a, int b, double t)
+    {
+        return (int)(a + (b - a) * t);
+    }
 }
