@@ -305,7 +305,9 @@ public class Grid {
                     System.out.println(",");
                 }
 
+
                 setValue(i, j, 0);
+                if(getValue(row, col) > 0) spawnedList.add(new Integer[]{row,col});
                 setValue(row, col, getValue(row, col) + value);
             }
         }
